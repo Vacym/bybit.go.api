@@ -26,10 +26,10 @@ var (
 type MessageHandler func(message string) error
 
 func (b *WebSocket) ReConnect() {
-	fmt.Println(time.Now().Format(tstamp), "Cleaning by disconnect ", b.subtopic)
+	fmt.Println(time.Now().Format(tstamp), "Cleaning by disconnect ", len(b.subtopic))
 	b.Disconnect()
 	b.wg.Wait()
-	fmt.Println(time.Now().Format(tstamp), "Attempting to reconnect ", b.subtopic)
+	fmt.Println(time.Now().Format(tstamp), "Attempting to reconnect ", len(b.subtopic))
 	con := b.Connect() // Example, adjust parameters as needed
 	if con == nil {
 		fmt.Println(time.Now().Format(tstamp), "Reconnection failed:")
@@ -44,7 +44,7 @@ func (b *WebSocket) ReConnect() {
 func (b *WebSocket) handleIncomingMessages() {
 	b.wg.Add(1)
 	defer b.wg.Done()
-	fmt.Println(time.Now().Format(tstamp), "Setup handle incoming message ", b.subtopic)
+	fmt.Println(time.Now().Format(tstamp), "Setup handle incoming message ", len(b.subtopic))
 	for {
 		_, message, err := b.conn.ReadMessage()
 		if err != nil {
@@ -71,7 +71,7 @@ func (b *WebSocket) monitorConnection() {
 	defer b.wg.Done()
 	ticker := time.NewTicker(time.Second * 5) // Check every 5 seconds
 	defer ticker.Stop()
-	fmt.Println(time.Now().Format(tstamp), "Setup connection monitoring ", b.subtopic)
+	fmt.Println(time.Now().Format(tstamp), "Setup connection monitoring ", len(b.subtopic))
 	b.lastReceive = time.Now()
 	for {
 		select {
@@ -81,12 +81,12 @@ func (b *WebSocket) monitorConnection() {
 			}
 			rMux.RLock()
 			if time.Since(b.lastReceive) > time.Duration(b.pingInterval)*time.Second {
-				fmt.Println(time.Now().Format(tstamp), "No data received within ping interval ", b.subtopic)
+				fmt.Println(time.Now().Format(tstamp), "No data received within ping interval ", len(b.subtopic))
 				go b.ReConnect()
 			}
 			rMux.RUnlock()
 		case <-b.ctx.Done():
-			fmt.Println(time.Now().Format(tstamp), "Exiting conn monitoring ", b.subtopic)
+			fmt.Println(time.Now().Format(tstamp), "Exiting conn monitoring ", len(b.subtopic))
 			return // Stop the routine if context is done
 		}
 	}
@@ -207,7 +207,7 @@ func (b *WebSocket) SendSubscription(args []string) (*WebSocket, error) {
 		"op":     "subscribe",
 		"args":   args,
 	}
-	fmt.Println(time.Now().Format(tstamp), "subscribe msg:", fmt.Sprintf("%v", subMessage["args"]))
+	fmt.Println(time.Now().Format(tstamp), "subscribe msg len:", len(args))
 	if err := b.sendAsJson(subMessage); err != nil {
 		fmt.Println(time.Now().Format(tstamp), "Failed to send subscription:", err)
 		return b, err
@@ -234,7 +234,7 @@ func (b *WebSocket) sendRequest(op string, args map[string]interface{}, headers 
 func ping(b *WebSocket) {
 	b.wg.Add(1)
 	defer b.wg.Done()
-	fmt.Println(time.Now().Format(tstamp), "Setup ping handler ", b.subtopic)
+	fmt.Println(time.Now().Format(tstamp), "Setup ping handler ", len(b.subtopic))
 	if b.pingInterval <= 0 {
 		fmt.Println(time.Now().Format(tstamp), "Ping interval is set to a non-positive value.")
 		return
@@ -266,11 +266,11 @@ func ping(b *WebSocket) {
 				pMux.Unlock()
 			exittick:
 			} else {
-				fmt.Println(time.Now().Format(tstamp), "Ping suspended when disconnected ", b.subtopic)
+				fmt.Println(time.Now().Format(tstamp), "Ping suspended when disconnected ", len(b.subtopic))
 			}
 
 		case <-b.ctx.Done():
-			fmt.Println(time.Now().Format(tstamp), "Ping context closed, stopping ping ", b.subtopic)
+			fmt.Println(time.Now().Format(tstamp), "Ping context closed, stopping ping ", len(b.subtopic))
 			return
 		}
 	}
