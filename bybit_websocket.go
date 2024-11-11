@@ -154,6 +154,10 @@ func NewBybitPublicWebSocket(url string, handler MessageHandler) *WebSocket {
 	return c
 }
 
+func (b *WebSocket) IsConnected() bool {
+	return b.isConnected
+}
+
 func (b *WebSocket) Connect() *WebSocket {
 	var err error
 	wssUrl := b.url
