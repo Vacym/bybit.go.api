@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -220,6 +221,21 @@ func (b *WebSocket) SendSubscription(args []string) (*WebSocket, error) {
 	return b, nil
 }
 
+func (b *WebSocket) SendOrder(op string, args map[string]interface{}) error {
+	timeStamp := GetCurrentTime()
+	headers := map[string]string{
+		timestampKey:  strconv.FormatInt(timeStamp, 10),
+		recvWindowKey: "5000",
+	}
+
+	if err := b.sendRequest(op, args, headers); err != nil {
+		fmt.Println(time.Now().Format(tstamp), "Failed to send order:", err)
+		return err
+	}
+	fmt.Println(time.Now().Format(tstamp), "Order sent successfully.")
+	return nil
+}
+
 // sendRequest sends a custom request over the WebSocket connection.
 func (b *WebSocket) sendRequest(op string, args map[string]interface{}, headers map[string]string) error {
 	reqID := uuid.New().String()
@@ -229,9 +245,6 @@ func (b *WebSocket) sendRequest(op string, args map[string]interface{}, headers 
 		"op":     op,
 		"args":   []interface{}{args},
 	}
-	fmt.Println("request headers:", fmt.Sprintf("%v", request["header"]))
-	fmt.Println("request op channel:", fmt.Sprintf("%v", request["op"]))
-	fmt.Println("request msg:", fmt.Sprintf("%v", request["args"]))
 	return b.sendAsJson(request)
 }
 
