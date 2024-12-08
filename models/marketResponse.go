@@ -93,6 +93,7 @@ type SpotInstrument struct {
 	LeverageFilter     LeverageFilter `json:"leverageFilter"`
 	PriceFilter        PriceFilter    `json:"priceFilter"`
 	LotSizeFilter      LotSizeFilter  `json:"lotSizeFilter"`
+	RiskParameters     RiskParameters `json:"riskParameters"`
 	UnifiedMarginTrade bool           `json:"unifiedMarginTrade"`
 	FundingInterval    int            `json:"fundingInterval"`
 	SettleCoin         string         `json:"settleCoin"`
@@ -120,6 +121,11 @@ type LotSizeFilter struct {
 	QuotePrecision      string `json:"quotePrecision"`
 	MaxOrderAmt         string `json:"maxOrderAmt"`
 	MinOrderAmt         string `jsoN:"minOrderAmt"`
+}
+
+type RiskParameters struct {
+	LimitParameter  string `json:"limitParameter"`
+	MarketParameter string `json:"marketParameter"`
 }
 
 type MarketOrderBookResponse struct {
