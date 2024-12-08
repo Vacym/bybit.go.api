@@ -205,7 +205,12 @@ func (b *WebSocket) Connect() *WebSocket {
 }
 
 func (b *WebSocket) SendSubscription(args []string) (*WebSocket, error) {
-	b.subtopic = args
+	// Add new topics without duplicates
+	for _, arg := range args {
+		if !contains(b.subtopic, arg) {
+			b.subtopic = append(b.subtopic, arg)
+		}
+	}
 	reqID := uuid.New().String()
 	subMessage := map[string]interface{}{
 		"req_id": reqID,
@@ -219,6 +224,45 @@ func (b *WebSocket) SendSubscription(args []string) (*WebSocket, error) {
 	}
 	fmt.Println(time.Now().Format(tstamp), "Subscription sent successfully.")
 	return b, nil
+}
+
+func (b *WebSocket) SendUnsubscription(args []string) (*WebSocket, error) {
+	reqID := uuid.New().String()
+	unsubMessage := map[string]interface{}{
+		"req_id": reqID,
+		"op":     "unsubscribe",
+		"args":   args,
+	}
+	fmt.Println(time.Now().Format(tstamp), "unsubscribe msg len:", len(args))
+	if err := b.sendAsJson(unsubMessage); err != nil {
+		fmt.Println(time.Now().Format(tstamp), "Failed to send unsubscription:", err)
+		return b, err
+	}
+	fmt.Println(time.Now().Format(tstamp), "Unsubscription sent successfully.")
+	// Remove topics from subtopic
+	for _, arg := range args {
+		b.subtopic = remove(b.subtopic, arg)
+	}
+	return b, nil
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
+func remove(slice []string, item string) []string {
+	newSlice := []string{}
+	for _, s := range slice {
+		if s != item {
+			newSlice = append(newSlice, s)
+		}
+	}
+	return newSlice
 }
 
 func (b *WebSocket) SendOrder(op string, args map[string]interface{}) error {
