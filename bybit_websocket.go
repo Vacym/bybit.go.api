@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -62,10 +63,12 @@ func (b *WebSocket) handleIncomingMessages() {
 		rMux.Unlock()
 
 		if b.onMessage != nil {
-			err := b.onMessage(string(message))
-			if err != nil {
-				fmt.Println(time.Now().Format(tstamp), "Error handling message:", err)
-				return
+			if !strings.Contains(string(message), `"op":"pong"`) {
+				err := b.onMessage(string(message))
+				if err != nil {
+					fmt.Println(time.Now().Format(tstamp), "Error handling message:", err)
+					return
+				}
 			}
 		}
 	}
